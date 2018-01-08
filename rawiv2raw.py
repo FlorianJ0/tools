@@ -57,8 +57,8 @@ else:
 
 writer = vtk.vtkXMLImageDataWriter()
 writer.SetFileName(outfname)
-if vtk.VTK_MAJOR_VERSION <= 5:
-    writer.SetInputConnection(imageData.GetProducerPort())
-else:
-    writer.SetInputData(imageData)
-writer.Write()
+# if vtk.VTK_MAJOR_VERSION <= 5:
+#     writer.SetInputConnection(imageData.GetProducerPort())
+# else:
+#     writer.SetInputData(imageData)
+# writer.Write()

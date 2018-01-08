@@ -26,7 +26,7 @@ scan (T1 and T2) and attempt to segment one of the ventricles.
 
 import SimpleITK as sitk
 from myshow import myshow, myshow3d
-
+from read_click import getPos
 
 # from downloaddata import fetch_data as fdata
 
@@ -36,9 +36,11 @@ from myshow import myshow, myshow3d
 
 img_T1 = sitk.ReadImage("/home/florian/liverSim/images/PCMRI/De lima Mendes/irm flux preop/QRURUMC4/KPBA3L5B/I2000001")
 
+
 # To visualize the labels image in RGB needs a image with 0-255 range
 img_T1_255 = sitk.Cast(sitk.RescaleIntensity(img_T1), sitk.sitkUInt8)
-
+nda = sitk.GetArrayFromImage(img_T1_255)
+nda = nda.reshape((156,192))
 size = img_T1.GetSize()
 print 'size = ', size
 myshow(img_T1_255, title='T1')  # , zslices=range(50, size[2] - 50, 20), title='T1')
@@ -51,7 +53,9 @@ myshow(img_T1_255, title='T1')  # , zslices=range(50, size[2] - 50, 20), title='
 # good seed for the left lateral ventricle.
 
 seed = (95, 79, 0)
-
+print getPos(nda)
+x, y, val = getPos(nda)
+seed = (x, y, 0)
 seg = sitk.Image(img_T1.GetSize(), sitk.sitkUInt8)
 print img_T1.GetSize()
 seg.CopyInformation(img_T1)

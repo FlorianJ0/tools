@@ -26,20 +26,20 @@ scan (T1 and T2) and attempt to segment one of the ventricles.
 
 import SimpleITK as sitk
 from myshow import myshow, myshow3d
-from downloaddata import fetch_data as fdata
+# from downloaddata import fetch_data as fdata
 
 ##############################################################################
 # Load Images
 # -----------
 
-img_T1 = sitk.ReadImage(
-    fdata("nac-hncma-atlas2013-Slicer4Version/Data/A1_grayT1.nrrd"))
+img_T1 = sitk.ReadImage("/home/florian/liverSim/images/PCMRI/De lima Mendes/irm flux preop/QRURUMC4/KPBA3L5B/I2000001")
 
 # To visualize the labels image in RGB needs a image with 0-255 range
 img_T1_255 = sitk.Cast(sitk.RescaleIntensity(img_T1), sitk.sitkUInt8)
 
 size = img_T1.GetSize()
-myshow3d(img_T1_255, zslices=range(50, size[2] - 50, 20), title='T1')
+print 'size = ', size
+myshow(img_T1_255, title='T1')#, zslices=range(50, size[2] - 50, 20), title='T1')
 
 ##############################################################################
 # Seed selection
@@ -48,17 +48,17 @@ myshow3d(img_T1_255, zslices=range(50, size[2] - 50, 20), title='T1')
 # Earlier we used 3D Slicer to determine that index: (132,142,96) was a
 # good seed for the left lateral ventricle.
 
-seed = (132, 142, 96)
+seed = (95, 79, 0)
 
 seg = sitk.Image(img_T1.GetSize(), sitk.sitkUInt8)
+print img_T1.GetSize()
 seg.CopyInformation(img_T1)
 seg[seed] = 1
 
 seg = sitk.BinaryDilate(seg, 3)
 
 myshow3d(sitk.LabelOverlay(img_T1_255, seg),
-         xslices=range(132, 133), yslices=range(142, 143),
-         zslices=range(96, 97), title="Initial Seed")
+         xslices=range(img_T1.GetSize()[0], img_T1.GetSize()[1]), title="Initial Seed")
 
 ##############################################################################
 # Region Growing
@@ -67,18 +67,17 @@ myshow3d(sitk.LabelOverlay(img_T1_255, seg),
 #
 # ``ConnectedThreshold``
 # ^^^^^^^^^^^^^^^^^^^^^^
-# Here, voxel’s neighbor is considered to be in the same class if the
-# neighboring voxel’s intensity is within explicitly specified thresholds.
+# Here, voxel's neighbor is considered to be in the same class if the
+# neighboring voxel's intensity is within explicitly specified thresholds.
 #
 # We start by using explicitly specified thresholds, you should modify
 # these (lower/upper) to see the effects on the resulting segmentation.
 
-seg_con = sitk.ConnectedThreshold(img_T1, seedList=[seed],
-                                  lower=100, upper=190)
-
-myshow3d(sitk.LabelOverlay(img_T1_255, seg_con),
-         xslices=range(132, 133), yslices=range(142, 143),
-         zslices=range(96, 97), title="Connected Threshold")
+# seg_con = sitk.ConnectedThreshold(img_T1, seedList=[seed],
+#                                   lower=10, upper=100)
+#
+# myshow3d(sitk.LabelOverlay(img_T1_255, seg_con),
+#          xslices=range(img_T1.GetSize()[0], img_T1.GetSize()[1]), title="Connected Threshold")
 
 ##############################################################################
 # ``ConfidenceConnected``
@@ -109,8 +108,7 @@ seg_conf = sitk.ConfidenceConnected(img_T1, seedList=[seed],
                                     replaceValue=1)
 
 myshow3d(sitk.LabelOverlay(img_T1_255, seg_conf),
-         xslices=range(132, 133), yslices=range(142, 143),
-         zslices=range(96, 97), title="ConfidenceConnected")
+         xslices=range(img_T1.GetSize()[0], img_T1.GetSize()[1]), title="ConfidenceConnected")
 
 ##############################################################################
 # ``VectorConfidenceConnected``
@@ -126,21 +124,20 @@ myshow3d(sitk.LabelOverlay(img_T1_255, seg_conf),
 #
 # Let's load a T2 image from the same person and combine it with the T1
 # image to create a vector image and apply the algorithm on it.
-
-img_T2 = sitk.ReadImage(
-    fdata("nac-hncma-atlas2013-Slicer4Version/Data/A1_grayT2.nrrd"))
-img_T2_255 = sitk.Cast(sitk.RescaleIntensity(img_T2), sitk.sitkUInt8)
-
-
-img_multi = sitk.Compose(img_T1, img_T2)
-seg_vec = sitk.VectorConfidenceConnected(img_multi, seedList=[seed],
-                                         numberOfIterations=1,
-                                         multiplier=4,
-                                         initialNeighborhoodRadius=1)
-
-myshow3d(sitk.LabelOverlay(img_T2_255, seg_vec),
-         xslices=range(132, 133), yslices=range(142, 143),
-         zslices=range(96, 97), title="VectorConfidenceConnected")
+#
+# img_T2 = sitk.ReadImage(
+#     # fdata("nac-hncma-atlas2013-Slicer4Version/Data/A1_grayT2.nrrd"))
+# # img_T2_255 = sitk.Cast(sitk.RescaleIntensity(img_T2), sitk.sitkUInt8)
+#
+#
+# img_multi = sitk.Compose(img_T1, img_T2)
+# seg_vec = sitk.VectorConfidenceConnected(img_multi, seedList=[seed],
+#                                          numberOfIterations=1,
+#                                          multiplier=4,
+#                                          initialNeighborhoodRadius=1)
+#
+# myshow3d(sitk.LabelOverlay(img_T2_255, seg_vec),
+#          xslices=range(img_T1.GetSize()[0], img_T1.GetSize()[1]), title="VectorConfidenceConnected")
 
 ##############################################################################
 # Clean up, clean up
@@ -160,12 +157,11 @@ myshow3d(sitk.LabelOverlay(img_T2_255, seg_vec),
 # The following code illustrates the results of such a clean up, using
 # closing to remove holes in the original segmentation.
 
-vectorRadius = (1, 1, 1)
+vectorRadius = (2, 2, 1)
 kernel = sitk.sitkBall
-seg_clean = sitk.BinaryMorphologicalClosing(seg_vec,
+seg_clean = sitk.BinaryMorphologicalClosing(seg_conf,
                                             vectorRadius,
                                             kernel)
 
 myshow3d(sitk.LabelOverlay(img_T1_255, seg_clean),
-         xslices=range(132, 133), yslices=range(142, 143),
-         zslices=range(96, 97), title="Cleaned up segmentation")
+         xslices=range(img_T1.GetSize()[0], img_T1.GetSize()[1]), title="Cleaned up segmentation")

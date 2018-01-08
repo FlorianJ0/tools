@@ -46,7 +46,7 @@ else:
 dims = imageData.GetDimensions()
 print 'image size: ', dims
 k = 0
-r = 1  # reduction coeff for quick tests
+r = 10  # reduction coeff for quick tests
 for z in range(dims[2] / r):
     if z % (dims[2] / 8) == 0:
         print 100 - (z * 100 / dims[2] / r), ' % restant.\n'

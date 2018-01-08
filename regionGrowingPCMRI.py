@@ -26,6 +26,8 @@ scan (T1 and T2) and attempt to segment one of the ventricles.
 
 import SimpleITK as sitk
 from myshow import myshow, myshow3d
+
+
 # from downloaddata import fetch_data as fdata
 
 ##############################################################################
@@ -39,7 +41,7 @@ img_T1_255 = sitk.Cast(sitk.RescaleIntensity(img_T1), sitk.sitkUInt8)
 
 size = img_T1.GetSize()
 print 'size = ', size
-myshow(img_T1_255, title='T1')#, zslices=range(50, size[2] - 50, 20), title='T1')
+myshow(img_T1_255, title='T1')  # , zslices=range(50, size[2] - 50, 20), title='T1')
 
 ##############################################################################
 # Seed selection

@@ -33,9 +33,9 @@ dz = (img['maxXYZ'][2] - img['minXYZ'][2]) / img['dimXYZ'][2]
 
 imageData = vtk.vtkImageData()
 imageData.SetDimensions(img['dimXYZ'][0], img['dimXYZ'][1], img['dimXYZ'][2])
-imageData.SetSpacing(dx, dy, dz)
+imageData.SetSpacing(img['spanXYZ'][0], img['spanXYZ'][1], img['spanXYZ'][2])
 imageData.SetOrigin(img['minXYZ'][0], img['minXYZ'][1], img['minXYZ'][2])
-
+# print img
 if vtk.VTK_MAJOR_VERSION <= 5:
     imageData.SetNumberOfScalarComponents(1)
     imageData.SetScalarTypeToDouble()

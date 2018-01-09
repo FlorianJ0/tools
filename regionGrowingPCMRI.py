@@ -28,7 +28,6 @@ import SimpleITK as sitk
 from myshow import myshow, myshow3d
 from read_click import getPos
 
-
 # from downloaddata import fetch_data as fdata
 
 ##############################################################################
@@ -39,60 +38,34 @@ img_T1 = sitk.ReadImage("/home/florian/liverSim/images/PCMRI/De lima Mendes/irm 
 
 # To visualize the labels image in RGB needs a image with 0-255 range
 img_T1_255 = sitk.Cast(sitk.RescaleIntensity(img_T1), sitk.sitkUInt8)
-img_T1_255  = sitk.Expand(img_T1_255, [3]*3, sitk.sitkLinear)
-img_T1  = sitk.Expand(img_T1, [3]*3, sitk.sitkLinear)
-
+img_T1_255 = sitk.Expand(img_T1_255, [3] * 3, sitk.sitkLinear)
+img_T1 = sitk.Expand(img_T1, [3] * 3, sitk.sitkLinear)
+imArray = sitk.GetArrayFromImage(img_T1)
+imArray = imArray[2, :, :]
 ny, nx = img_T1_255.GetSize()[0], img_T1_255.GetSize()[1]
-print img_T1_255.GetSize, nx, ny
-# myshow(img_T1_255)
-print 'prout'
-nda = sitk.GetArrayFromImage(img_T1_255)
-nda = nda[2,:,:]
-print nda.shape
-nda = nda.reshape((nx, ny))
+imArray255 = sitk.GetArrayFromImage(img_T1_255)
+imArray255 = imArray255[2, :, :]
+print imArray255.shape
+imArray255 = imArray255.reshape((nx, ny))
 size = img_T1_255.GetSize()
 print 'size = ', size
-myshow(img_T1_255, title='T1')  # , zslices=range(50, size[2] - 50, 20), title='T1')
+# myshow(img_T1_255, title='T1')  # , zslices=range(50, size[2] - 50, 20), title='T1')
 
 ##############################################################################
 # Seed selection
 # --------------
-#
-# Earlier we used 3D Slicer to determine that index: (132,142,96) was a
-# good seed for the left lateral ventricle.
 
-# seed = (95, 79, 0)
-print getPos(nda)
-x, y, val = getPos(nda)
+x, y, val = getPos(imArray255)
 seed = (x, y, 0)
+print 'seed: ', seed
 seg = sitk.Image(img_T1.GetSize(), sitk.sitkUInt8)
-print img_T1.GetSize()
 seg.CopyInformation(img_T1)
 seg[seed] = 1
 
 seg = sitk.BinaryDilate(seg, 3)
 
-myshow3d(sitk.LabelOverlay(img_T1_255, seg),
-         xslices=range(img_T1.GetSize()[0], img_T1.GetSize()[1]), title="Initial Seed")
-
-##############################################################################
-# Region Growing
-# --------------
-#  Let's start with ``ConnectedThreshold``.
-#
-# ``ConnectedThreshold``
-# ^^^^^^^^^^^^^^^^^^^^^^
-# Here, voxel's neighbor is considered to be in the same class if the
-# neighboring voxel's intensity is within explicitly specified thresholds.
-#
-# We start by using explicitly specified thresholds, you should modify
-# these (lower/upper) to see the effects on the resulting segmentation.
-
-# seg_con = sitk.ConnectedThreshold(img_T1, seedList=[seed],
-#                                   lower=10, upper=100)
-#
-# myshow3d(sitk.LabelOverlay(img_T1_255, seg_con),
-#          xslices=range(img_T1.GetSize()[0], img_T1.GetSize()[1]), title="Connected Threshold")
+# myshow3d(sitk.LabelOverlay(img_T1_255, seg),
+#          xslices=range(img_T1.GetSize()[0], img_T1.GetSize()[1]), title="Initial Seed")
 
 ##############################################################################
 # ``ConfidenceConnected``
@@ -102,7 +75,7 @@ myshow3d(sitk.LabelOverlay(img_T1_255, seg),
 # Unlike in ``ConnectedThreshold``, you need not select the bounds in
 # ``ConfidenceConnected`` filter. Bounds are implicitly specified as
 # :math:`\mu\pm c\sigma`, where :math:`\mu` is the mean intensity of the seed
-# points, :math:`\sigma` their standard deviation and :math:`c` a user specified
+# points, :math:`\sigma` their staimArray255rd deviation and :math:`c` a user specified
 # constant.
 #
 # This algorithm has some flexibility which you should familiarize yourself with:
@@ -118,43 +91,13 @@ myshow3d(sitk.LabelOverlay(img_T1_255, seg),
 
 seg_conf = sitk.ConfidenceConnected(img_T1, seedList=[seed],
                                     numberOfIterations=1,
-                                    multiplier=9.5,
+                                    multiplier=7.5,
                                     initialNeighborhoodRadius=1,
                                     replaceValue=1)
+#
+# myshow3d(sitk.LabelOverlay(img_T1_255, seg_conf),
+#          xslices=range(img_T1.GetSize()[0], img_T1.GetSize()[1]), title="ConfidenceConnected")
 
-myshow3d(sitk.LabelOverlay(img_T1_255, seg_conf),
-         xslices=range(img_T1.GetSize()[0], img_T1.GetSize()[1]), title="ConfidenceConnected")
-
-##############################################################################
-# ``VectorConfidenceConnected``
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# A generalization of the previous approach to vector valued images,
-# for instance multi-spectral images or multi-parametric MRI.
-# Here, The bounds for neighboring voxel's intensity vector is 2implicitly
-# specified bounds using the Mahalanobis distance
-# :math:`\sqrt{(\mathbf{x}-\mathbf{\mu})^T\Sigma^{-1}(\mathbf{x}-\mathbf{\mu})}<c`,
-# where :math:`\mathbf{\mu}` is the mean of the vectors at the seed points,
-# :math:`\Sigma` is the covariance matrix and :math:`c` is a user specified
-# constant.
-#
-# Let's load a T2 image from the same person and combine it with the T1
-# image to create a vector image and apply the algorithm on it.
-#
-# img_T2 = sitk.ReadImage(
-#     # fdata("nac-hncma-atlas2013-Slicer4Version/Data/A1_grayT2.nrrd"))
-# # img_T2_255 = sitk.Cast(sitk.RescaleIntensity(img_T2), sitk.sitkUInt8)
-#
-#
-# img_multi = sitk.Compose(img_T1, img_T2)
-# seg_vec = sitk.VectorConfidenceConnected(img_multi, seedList=[seed],
-#                                          numberOfIterations=1,
-#                                          multiplier=4,
-#                                          initialNeighborhoodRadius=1)
-#
-# myshow3d(sitk.LabelOverlay(img_T2_255, seg_vec),
-#          xslices=range(img_T1.GetSize()[0], img_T1.GetSize()[1]), title="VectorConfidenceConnected")
-
-##############################################################################
 # Clean up, clean up
 # ------------------
 #
@@ -178,5 +121,10 @@ seg_clean = sitk.BinaryMorphologicalClosing(seg_conf,
                                             vectorRadius,
                                             kernel)
 
-myshow3d(sitk.LabelOverlay(img_T1_255, seg_clean),
-         xslices=range(img_T1.GetSize()[0], img_T1.GetSize()[1]), title="Cleaned up segmentation")
+myshow3d(sitk.LabelOverlay(img_T1_255, seg_clean), title="Cleaned up segmentation")
+
+# print seg_clean[234, 256,1]
+segArray = sitk.GetArrayFromImage(seg_clean)
+print segArray.shape
+segArray = segArray[1,:,:]
+segIm = imArray[segArray>0]

@@ -35,12 +35,14 @@ from read_click import getPos
 # -----------
 
 img_T1 = sitk.ReadImage("/home/florian/liverSim/images/PCMRI/De lima Mendes/irm flux preop/QRURUMC4/KPBA3L5B/I2000001")
-
+print img_T1
+img_T1 = sitk.Resample(img_T1, (400,400,1))
+print img_T1
 
 # To visualize the labels image in RGB needs a image with 0-255 range
 img_T1_255 = sitk.Cast(sitk.RescaleIntensity(img_T1), sitk.sitkUInt8)
 nda = sitk.GetArrayFromImage(img_T1_255)
-nda = nda.reshape((156,192))
+nda = nda.reshape((400,400))
 size = img_T1.GetSize()
 print 'size = ', size
 myshow(img_T1_255, title='T1')  # , zslices=range(50, size[2] - 50, 20), title='T1')

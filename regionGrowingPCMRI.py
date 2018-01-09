@@ -28,6 +28,7 @@ import SimpleITK as sitk
 from myshow import myshow, myshow3d
 from read_click import getPos
 
+
 # from downloaddata import fetch_data as fdata
 
 ##############################################################################
@@ -35,15 +36,21 @@ from read_click import getPos
 # -----------
 
 img_T1 = sitk.ReadImage("/home/florian/liverSim/images/PCMRI/De lima Mendes/irm flux preop/QRURUMC4/KPBA3L5B/I2000001")
-print img_T1
-img_T1 = sitk.Resample(img_T1, (400,400,1))
-print img_T1
 
 # To visualize the labels image in RGB needs a image with 0-255 range
 img_T1_255 = sitk.Cast(sitk.RescaleIntensity(img_T1), sitk.sitkUInt8)
+img_T1_255  = sitk.Expand(img_T1_255, [3]*3, sitk.sitkLinear)
+img_T1  = sitk.Expand(img_T1, [3]*3, sitk.sitkLinear)
+
+ny, nx = img_T1_255.GetSize()[0], img_T1_255.GetSize()[1]
+print img_T1_255.GetSize, nx, ny
+# myshow(img_T1_255)
+print 'prout'
 nda = sitk.GetArrayFromImage(img_T1_255)
-nda = nda.reshape((400,400))
-size = img_T1.GetSize()
+nda = nda[2,:,:]
+print nda.shape
+nda = nda.reshape((nx, ny))
+size = img_T1_255.GetSize()
 print 'size = ', size
 myshow(img_T1_255, title='T1')  # , zslices=range(50, size[2] - 50, 20), title='T1')
 
@@ -54,7 +61,7 @@ myshow(img_T1_255, title='T1')  # , zslices=range(50, size[2] - 50, 20), title='
 # Earlier we used 3D Slicer to determine that index: (132,142,96) was a
 # good seed for the left lateral ventricle.
 
-seed = (95, 79, 0)
+# seed = (95, 79, 0)
 print getPos(nda)
 x, y, val = getPos(nda)
 seed = (x, y, 0)
@@ -111,7 +118,7 @@ myshow3d(sitk.LabelOverlay(img_T1_255, seg),
 
 seg_conf = sitk.ConfidenceConnected(img_T1, seedList=[seed],
                                     numberOfIterations=1,
-                                    multiplier=2.5,
+                                    multiplier=9.5,
                                     initialNeighborhoodRadius=1,
                                     replaceValue=1)
 

@@ -24,122 +24,72 @@ scan (T1 and T2) and attempt to segment one of the ventricles.
 # License: CC-BY
 # sphinx_gallery_thumbnail_number = 4
 
-import SimpleITK as sitk
-from myshow import myshow, myshow3d
-from read_click import getPos
+
+from read_click import getQ
 import numpy as np
-# from downloaddata import fetch_data as fdata
+import glob
+from myshow import scrollshow
+import SimpleITK as sitk
+import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
 
+r = 3  # scaling factor
+multi = 7.5  # multiplicator for region growing
+im = "/home/florian/liverSim/images/PCMRI/De lima Mendes/irm flux preop/QRURUMC4/KPBA3L5B/I2000001"
+imfolder = '/home/florian/liverSim/images/PCMRI/De lima Mendes/irm flux preop/QRURUMC4/SCZ2RGG5/'
+imlist = glob.glob(imfolder + '*')
+imlist.sort()
+# get info from 1st image for scrolling display
+img = sitk.ReadImage(imlist[0])
+nda = sitk.GetArrayFromImage(img)
+size = img.GetSize()
+'''
+WARING
+a VERSION file is supposed to be present in the folder and thus rejected
+remove the -1 in the last direction of scrollArray and vesselArray if not
+'''
+scrollArray = np.empty([size[1], size[0], len(imlist) - 1])
+vesselArray = np.empty([size[1] * r, size[0] * r, len(imlist) - 1])
 
+print scrollArray.shape
+k = 0
+for i in imlist:
+    try:
+        img = sitk.ReadImage(i)
+        nda = sitk.GetArrayFromImage(img)
+        scrollArray[:, :, k] = nda[0, :, :]
+    except RuntimeError:
+        print i
+    k += 1
+scrollshow(scrollArray)
 
+print 'SHOW ME YOUR BEST ANGLE: '
+slice = input()
+try:
+    val = int(slice)
+except ValueError:
+    print("That's not an int!")
 
-def getQ(imageFile):
-    ##############################################################################
-    # Load Images
-    # -----------
-    r = 2 # resampling factor
-    img_T1 = sitk.ReadImage(imageFile)
-    img_T1 = sitk.Expand(img_T1, [r,r,1] * 3, sitk.sitkLinear)
-    imArray = sitk.GetArrayFromImage(img_T1)
-    imArray = imArray[0, :, :]
-    # To visualize the labels image in RGB needs a image with 0-255 range
-    img_T1_255 = sitk.Cast(sitk.RescaleIntensity(img_T1), sitk.sitkUInt8)
-    # img_T1_255 = sitk.Expand(img_T1_255, [r,r,1] * 3, sitk.sitkLinear) #resample by r in all but z direction
-    myshow(img_T1_255, title = 'resampled')
+# slice = 14
+segArray = getQ(imlist[slice], r, multi)
 
-    ny, nx = img_T1_255.GetSize()[0], img_T1_255.GetSize()[1]
-    imArray255 = sitk.GetArrayFromImage(img_T1_255)
-    imArray255 = imArray255[0, :, :]
-    print imArray255.shape
-    imArray255 = imArray255.reshape((nx, ny))
-    size = img_T1_255.GetSize()
-    print 'size = ', size
-    # myshow(img_T1_255, title='T1')  # , zslices=range(50, size[2] - 50, 20), title='T1')
+k = 0
+q = np.empty([0])  # flow rate array
+for i in imlist:
+    try:
+        img = sitk.ReadImage(i)
+        img = sitk.ReadImage(i)
+        img = sitk.Expand(img, [r, r, 1] * 3, sitk.sitkLinear)  # resampling with same dx dy as for getQ function
+        nda = sitk.GetArrayFromImage(img)
+        vesselArray[:, :, k] = nda[0, :, :] * segArray
+        q = np.append(q, (np.sum(vesselArray[:, :, k])))
+    except RuntimeError:
+        print i
+    k += 1
 
-    ##############################################################################
-    # Seed selection
-    # --------------
-
-    x, y, val = getPos(imArray255)
-    seed = (x, y, 0)
-    print 'seed: ', seed
-    seg = sitk.Image(img_T1.GetSize(), sitk.sitkUInt8)
-    seg.CopyInformation(img_T1)
-    seg[seed] = 1
-
-    seg = sitk.BinaryDilate(seg, 3)
-
-    # myshow3d(sitk.LabelOverlay(img_T1_255, seg),
-    #          xslices=range(img_T1.GetSize()[0], img_T1.GetSize()[1]), title="Initial Seed")
-
-    ##############################################################################
-    # ``ConfidenceConnected``
-    # ^^^^^^^^^^^^^^^^^^^^^^^
-    #
-    #
-    # Unlike in ``ConnectedThreshold``, you need not select the bounds in
-    # ``ConfidenceConnected`` filter. Bounds are implicitly specified as
-    # :math:`\mu\pm c\sigma`, where :math:`\mu` is the mean intensity of the seed
-    # points, :math:`\sigma` their staimArray255rd deviation and :math:`c` a user specified
-    # constant.
-    #
-    # This algorithm has some flexibility which you should familiarize yourself with:
-    #
-    # * The ``multiplier`` parameter is the constant :math:`c` from the formula above.
-    # * You can specify a region around each seed point ``initialNeighborhoodRadius``
-    #   from which the statistics are estimated, see what happens when you set it to zero.
-    # * The ``numberOfIterations`` allows you to rerun the algorithm. In the first
-    #   run the bounds are defined by the seed voxels you specified, in the
-    #   following iterations :math:`\mu` and :math:`\sigma` are estimated from
-    #   the segmented points and the region growing is updated accordingly.
-
-
-    seg_conf = sitk.ConfidenceConnected(img_T1, seedList=[seed],
-                                        numberOfIterations=1,
-                                        multiplier=9.5,
-                                        initialNeighborhoodRadius=1,
-                                        replaceValue=1)
-    #
-    # myshow3d(sitk.LabelOverlay(img_T1_255, seg_conf),
-    #          xslices=range(img_T1.GetSize()[0], img_T1.GetSize()[1]), title="ConfidenceConnected")
-
-    # Clean up, clean up
-    # ------------------
-    #
-    # Use of low level segmentation algorithms such as region growing is often followed by a clean up step. In this step we fill holes and remove small connected components. Both of these operations are achieved by using binary morphological operations, opening (``BinaryMorphologicalOpening``) to remove small connected components and closing (``BinaryMorphologicalClosing``) to fill holes.
-    #
-    # SimpleITK supports several shapes for the structuring elements (kernels) including:
-    #
-    # - sitkAnnulus
-    # - sitkBall
-    # - sitkBox
-    # - sitkCross
-    #
-    # The size of the kernel can be specified as a scalar (same for all dimensions) or as a vector of values, size per dimension.
-    #
-    # The following code illustrates the results of such a clean up, using
-    # closing to remove holes in the original segmentation.
-
-
-    vectorRadius = (2, 2, 1)
-    kernel = sitk.sitkBall
-    seg_clean = sitk.BinaryMorphologicalClosing(seg_conf,
-                                                vectorRadius,
-                                                kernel)
-
-    myshow3d(sitk.LabelOverlay(img_T1_255, seg_clean), title="Cleaned up segmentation")
-
-    # print seg_clean[234, 256,1]
-    segArray = sitk.GetArrayFromImage(seg_clean)
-    print segArray.shape
-    segArray = segArray[0,:,:]
-    segImArray = imArray[segArray>0]
-    print segImArray.shape, len(segImArray)
-    sumPix = np.sum(segImArray)
-    print 'Q =', sumPix, 'Vavg = ', sumPix/len(segImArray)
-    return sumPix, sumPix/len(segImArray)
-
-
-if __name__ == "__main__":
-    im = "/home/florian/liverSim/images/PCMRI/De lima Mendes/irm flux preop/QRURUMC4/KPBA3L5B/I2000001"
-    Q, v = getQ(im)
+scrollshow(vesselArray)
+x = np.linspace(0, 1, num=q.shape[0], endpoint=True)
+f2 = interp1d(x, q, kind='linear')
+xnew = np.linspace(0, 1, num=q.shape[0] * 2, endpoint=True)
+plt.plot(x, q, 'o', xnew, f2(xnew), '--')
+plt.show()

@@ -115,6 +115,7 @@ seg_conf = sitk.ConfidenceConnected(img_T1, seedList=[seed],
 # The following code illustrates the results of such a clean up, using
 # closing to remove holes in the original segmentation.
 
+
 vectorRadius = (2, 2, 1)
 kernel = sitk.sitkBall
 seg_clean = sitk.BinaryMorphologicalClosing(seg_conf,

@@ -38,7 +38,7 @@ import seaborn as sns
 r = 3  # scaling factor
 multi = 7.5  # multiplicator for region growing
 
-extract = False #do not extract data from image but load npy array
+extract = 0 #do not extract data from image but load npy array
 
 if extract:
     im = "/home/florian/liverSim/images/PCMRI/De lima Mendes/irm flux preop/QRURUMC4/KPBA3L5B/I2000001"
@@ -111,9 +111,14 @@ else:
 CP = 1 # heart period 1s
 RP = 3 # respiratory period 8s
 
-# np.save('veloc', uavg)
+np.save('veloc', uavg)
 
 uavg = uavg[1:]
+
+sns.set()
+sns.set_style("whitegrid")
+sns.despine(left=True)
+
 def smooth(Y):
     plotvar = np.append(np.append(Y, Y), Y)
     x = np.linspace(0, 3 * CP, num=plotvar.shape[0], endpoint=True)
@@ -124,8 +129,6 @@ def smooth(Y):
     return f3
 
 vsmooth = smooth(uavg)
-sns.set()
-sns.set_style("whitegrid")
-sns.despine(left=True)
+print vsmooth
 
 plt.show()

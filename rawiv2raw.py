@@ -2,10 +2,10 @@ import struct
 import vtk
 import sys
 
-fname = sys.argv[1]
-outfname = sys.argv[2]
-# fname = "/home/florian/Downloads/toto.rawiv"
-# outfname = "/home/florian/Downloads/toto1.vti"
+# fname = sys.argv[1]
+# outfname = sys.argv[2]
+fname = "/home/florian/Downloads/BROUST^MICHELE^MARIETHERESE^MRS-1.2.840.113704.7.32.0340.3.2869567146.362.1503033556.129.3153920-REC-465.rawiv"
+outfname = "/home/florian/Downloads/toto1.vti"
 print '\n reading ', fname
 with open(fname, 'rb') as f:
     PacketHeader = f.read(68)
@@ -20,12 +20,13 @@ nbytes = len(dataImg)
 elsize = nbytes / img['numCells'][0]
 nelements = img['numVerts'][0]
 
-toto = struct.unpack('>' + str(nelements) + '?', dataImg)
+toto = struct.unpack('>' + str(nelements) + 'B', dataImg)
 
 print '\n done reading \n creating image'
 toto = list(toto)
-toto[toto == True] = 1
-toto[toto == False] = 0
+# print max(toto)
+# toto[toto == True] = 1
+# toto[toto == False] = 0
 
 dx = (img['maxXYZ'][0] - img['minXYZ'][0]) / img['dimXYZ'][0]
 dy = (img['maxXYZ'][1] - img['minXYZ'][1]) / img['dimXYZ'][1]
@@ -46,7 +47,7 @@ else:
 dims = imageData.GetDimensions()
 print 'image size: ', dims
 k = 0
-r = 10  # reduction coeff for quick tests
+r = 1  # reduction coeff for quick tests
 for z in range(dims[2] / r):
     if z % (dims[2] / 8) == 0:
         print 100 - (z * 100 / dims[2] / r), ' % restant.\n'

@@ -38,7 +38,7 @@ import seaborn as sns
 r = 3  # scaling factor
 multi = 7.5  # multiplicator for region growing
 
-extract = 0 #do not extract data from image but load npy array
+extract = 1 #do not extract data from image but load npy array
 
 if extract:
     im = "/home/florian/liverSim/images/PCMRI/De lima Mendes/irm flux preop/QRURUMC4/KPBA3L5B/I2000001"
@@ -109,7 +109,8 @@ else:
     uavg = np.load('veloc.npy')
 
 CP = 1 # heart period 1s
-RP = 3 # respiratory period 8s
+k = 8
+RP = k * CP # respiratory period 8s
 
 np.save('veloc', uavg)
 

@@ -114,7 +114,8 @@ RP = k * CP # respiratory period 8s
 
 np.save('veloc', uavg)
 
-uavg = uavg[1:]
+#CORRECTION POUR CE CAS UNIQUEMENT : SLIDE #1 = pourrite
+uavg[0] = 0.5*(uavg[1]+uavg[-1])
 
 sns.set()
 sns.set_style("whitegrid")

@@ -4,8 +4,8 @@ import sys
 
 # fname = sys.argv[1]
 # outfname = sys.argv[2]
-fname = "/home/florian/Downloads/BROUST^MICHELE^MARIETHERESE^MRS-1.2.840.113704.7.32.0340.3.2869567146.362.1503033556.129.3153920-REC-465.rawiv"
-outfname = "/home/florian/Downloads/toto1.vti"
+fname = "/home/florian/liverSim/test_convert/CHARBONNIER^ERIC^GILBERT-1.2.840.113704.7.32.1.2.840.113704.1.111.11064.1445517251.25-REC-477-R3-1.rawiv"
+outfname = "/home/florian/liverSim/test_convert/totoR3.vti"
 print '\n reading ', fname
 with open(fname, 'rb') as f:
     PacketHeader = f.read(68)
@@ -15,7 +15,7 @@ img = {'minXYZ': struct.unpack('>fff', PacketHeader[0:12]), 'maxXYZ': struct.unp
        'numVerts': struct.unpack('>I', PacketHeader[24:28]), 'numCells': struct.unpack('>I', PacketHeader[28:32]),
        'dimXYZ': struct.unpack('>III', PacketHeader[32:44]), 'originXYZ': struct.unpack('>fff', PacketHeader[44:56]),
        'spanXYZ': struct.unpack('>fff', PacketHeader[56:68])}
-
+print img
 nbytes = len(dataImg)
 elsize = nbytes / img['numCells'][0]
 nelements = img['numVerts'][0]

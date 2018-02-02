@@ -1,11 +1,15 @@
 import struct
 import vtk
 import sys
-
+from vmtk import pypes
+import numpy as np
 # fname = sys.argv[1]
 # outfname = sys.argv[2]
-fname = "/home/florian/liverSim/test_convert/CHARBONNIER^ERIC^GILBERT-1.2.840.113704.7.32.1.2.840.113704.1.111.11064.1445517251.25-REC-477-R3-1.rawiv"
-outfname = "/home/florian/liverSim/test_convert/totoR3.vti"
+fname = "/home/florian/liverSim/test_convert/CHARBONNIER^ERIC^GILBERT-1.2.840.113704.7.32.1.2.840.113704.1.111.11064.1445517251.25-REC-477.rawiv"
+outfname = "/home/florian/liverSim/test_convert/toto.vti"
+outSurfName = outfname[:-4]+'_surf.vtp'
+
+
 print '\n reading ', fname
 with open(fname, 'rb') as f:
     PacketHeader = f.read(68)
@@ -24,7 +28,10 @@ toto = struct.unpack('>' + str(nelements) + 'B', dataImg)
 
 print '\n done reading \n creating image'
 toto = list(toto)
-# print max(toto)
+print max(toto)
+m = np.indices([np.int(max(toto))])
+m = list(m[0])
+print 'indices in volue :', m
 # toto[toto == True] = 1
 # toto[toto == False] = 0
 
@@ -66,3 +73,7 @@ else:
     writer.SetInputData(imageData)
 writer.Write()
 print outfname, ' written\n\nbyebye'
+
+
+MC = 'vmtkmarchingcubes -ifile  ' + outfname + '  -l 0.5 -ofile ' + outSurfName + '  --pipe vmtksurfaceviewer'
+myPype = pypes.PypeRun(MC)

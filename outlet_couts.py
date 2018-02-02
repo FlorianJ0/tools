@@ -165,7 +165,7 @@ start_time = time.time()
 
 
 myWriter.Surface = con.Surface
-myWriter.OutputFileName = loc + fname + "_endTubesCut.vtp"
+myWriter.OutputFileName = loc + fname + "_endTubesCut.stl"
 myWriter.Execute()
 
 print 'Surfaces written to disk'

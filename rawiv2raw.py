@@ -3,12 +3,55 @@ import vtk
 import sys
 from vmtk import pypes
 import numpy as np
+from Tkinter import *
+from Tkinter import Frame, Tk, BOTH, Text, Menu, END
+import tkFileDialog
+
+class guigui(Frame):
+
+    def __init__(self, parent):
+        Frame.__init__(self, parent)
+
+        self.parent = parent
+        self.initUI()
+
+    def initUI(self):
+
+        self.parent.title("File dialog")
+        self.pack(fill=BOTH, expand=1)
+
+        menubar = Menu(self.parent)
+        self.parent.config(menu=menubar)
+
+        fileMenu = Menu(menubar)
+        fileMenu.add_command(label="Open", command=self.onOpen)
+        menubar.add_cascade(label="File", menu=fileMenu)
+
+        self.txt = Text(self)
+        self.txt.pack(fill=BOTH, expand=1)
+
+
+    def onOpen(self):
+
+        ftypes = [('Python files', '*.py'), ('All files', '*')]
+        dlg = tkFileDialog.Open(self, filetypes = ftypes)
+        fl = dlg.show()
+
+        if fl != '':
+            text = self.readFile(fl)
+            self.txt.insert(END, text)
+
+
 # fname = sys.argv[1]
 # outfname = sys.argv[2]
 fname = "/home/florian/liverSim/test_convert/CHARBONNIER^ERIC^GILBERT-1.2.840.113704.7.32.1.2.840.113704.1.111.11064.1445517251.25-REC-477.rawiv"
 outfname = "/home/florian/liverSim/test_convert/toto.vti"
-outSurfName = outfname[:-4]+'_surf.vtp'
+outSurfName = outfname[:-4] + '_surf.vtp'
 
+root = Tk()
+ex = guigui()
+root.geometry("300x250+300+300")
+root.mainloop()
 
 print '\n reading ', fname
 with open(fname, 'rb') as f:
@@ -73,7 +116,6 @@ else:
     writer.SetInputData(imageData)
 writer.Write()
 print outfname, ' written\n\nbyebye'
-
 
 MC = 'vmtkmarchingcubes -ifile  ' + outfname + '  -l 0.5 -ofile ' + outSurfName + '  --pipe vmtksurfaceviewer'
 myPype = pypes.PypeRun(MC)

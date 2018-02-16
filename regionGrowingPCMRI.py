@@ -104,10 +104,12 @@ def smooth(Y):
     f3 = interp1d(x, y3, kind='quadratic')
     xnew = np.linspace(0, 3 * CP, num=100, endpoint=True)
     plt.plot(x, plotvar, 'o', xnew, f3(xnew), '--')
+
     return f3
 
 
 vsmooth = smooth(uavg)
+np.save('/home/florian/liverSim/q_vc_MRI', uavg)
 print vsmooth
 
 plt.show()

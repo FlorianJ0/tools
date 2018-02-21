@@ -20,9 +20,9 @@ def getPos(img):
             break
         elif k == ord('a'):  # click on 'a' to get value
             try:
-                print mouseX, mouseY
+                print(mouseX, mouseY)
             except NameError:
-                print 'click first dumbass'
+                print('click first dumbass')
 
     cv2.destroyAllWindows()
     return mouseX, mouseY, img[mouseX, mouseY]
@@ -46,10 +46,10 @@ def getQ(imageFile, r = 2, multi = 7.5):
     ny, nx = img_T1_255.GetSize()[0], img_T1_255.GetSize()[1]
     imArray255 = sitk.GetArrayFromImage(img_T1_255)
     imArray255 = imArray255[0, :, :]
-    print imArray255.shape
+    print(imArray255.shape)
     imArray255 = imArray255.reshape((nx, ny))
     size = img_T1_255.GetSize()
-    print 'size = ', size
+    print('size = ', size)
     # myshow(img_T1_255, title='T1')  # , zslices=range(50, size[2] - 50, 20), title='T1')
 
     ##############################################################################
@@ -58,7 +58,7 @@ def getQ(imageFile, r = 2, multi = 7.5):
 
     x, y, val = getPos(imArray255)
     seed = (x, y, 0)
-    print 'seed: ', seed
+    print('seed: ', seed)
     seg = sitk.Image(img_T1.GetSize(), sitk.sitkUInt8)
     seg.CopyInformation(img_T1)
     seg[seed] = 1
@@ -127,18 +127,18 @@ def getQ(imageFile, r = 2, multi = 7.5):
 
     # print seg_clean[234, 256,1]
     segArray = sitk.GetArrayFromImage(seg_clean)
-    print segArray.shape
+    print(segArray.shape)
     segArray = segArray[0,:,:]
     segImArray = imArray[segArray>0]
-    print segImArray.shape, len(segImArray)
+    print(segImArray.shape, len(segImArray))
     # u = slope * signal + intercept
     sumPix = np.sum(segImArray)
     vag = np.mean(segImArray)
-    print 'Q =', sumPix, 'Vavg = ', vag
+    print('Q =', sumPix, 'Vavg = ', vag)
     segImArrayPhysical = segImArray * resSlope + reIntercep #in physical units
     sumPix = np.sum(segImArrayPhysical)
     vag = np.mean(segImArrayPhysical)
-    print 'Q =', sumPix, 'Vavg = ', vag
+    print('Q =', sumPix, 'Vavg = ', vag)
 
     return  segArray
 

@@ -2,11 +2,12 @@ import numpy as np
 import csv
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
-from scipy.signal import savgol_filter
+from scipy import fftpack, signal
 from scipy.interpolate import UnivariateSpline
 import seaborn as sns
 import vapeplot
 from icecream import ic
+from sklearn import preprocessing
 
 '''
 creates Q profile from 
@@ -14,27 +15,22 @@ Spectral Doppler of the Hepatic Veins in Noncardiac Diseases:
 What the Echocardiographer Should Know
 '''
 
-
-def rfft_xcorr(x, y):
-    M = len(x) + len(y) - 1
-    N = 2 ** int(np.ceil(np.log2(M)))
-    X = np.fft.rfft(x, N)
-    Y = np.fft.rfft(y, N)
-    cxy = np.fft.irfft(X * np.conj(Y))
-    cxy = np.hstack((cxy[:len(x)], cxy[N - len(y) + 1:]))
-    return cxy
-
-
-def match(x, ref):
-    cxy = rfft_xcorr(x, ref)
-    index = np.argmax(cxy)
-    if index < len(x):
-        return index
-    else:  # negative lag
-        return index - len(cxy)
-
-
 plt.xkcd()
+
+
+def shifting(a, b):
+    A = fftpack.fft(a)
+    B = fftpack.fft(b)
+    Ar = A.conjugate()
+    Br = B.conjugate()
+    AB = np.argmax(np.abs(fftpack.ifft(Ar * B)))
+    BA = np.argmax(np.abs(fftpack.ifft(A * Br)))
+    # ic(np.argmax(signal.correlate(a, b)))
+    # ic(np.argmax(signal.correlate(b, a)))
+    # plt.plot(np.abs(fftpack.ifft(Ar * B)), label="a")
+    # plt.plot(np.abs(fftpack.ifft(A * Br)), label="b")
+
+    return AB, BA
 
 
 def csvreader(infile):
@@ -63,8 +59,8 @@ def smoothie(Y, l=1, curveName="toto"):
     f3 = interp1d(plotvar[:, 0], plotvar[:, 1], kind='cubic')
     xnew = np.linspace(0, 4 * k * CP, num=4 * k * 100, endpoint=True)
     ynew = f3(xnew)
-    yhat = savgol_filter(ynew, 15, 3)
-    yhat = savgol_filter(yhat, 5, 3)
+    yhat = signal.savgol_filter(ynew, 15, 3)
+    yhat = signal.savgol_filter(yhat, 5, 3)
     yhat = np.array([np.linspace(0, k * CP, num=k * 100, endpoint=True), yhat[1 * k * 100:2 * k * 100]])
     yhat = yhat.T
     yhat = np.tile(yhat, (4, 1))
@@ -72,7 +68,7 @@ def smoothie(Y, l=1, curveName="toto"):
     if l == 4:
         yhat = yhat[:100, :]
         yhat[:, 0] *= l
-    plt.plot(yhat[:, 0], yhat[:, 1], '-', label=curveName)
+    # plt.plot(yhat[:, 0], yhat[:, 1], '-', label=curveName)
     return yhat
 
 
@@ -83,7 +79,7 @@ RP = k * CP  # respiratory period 8s
 try:
     toto = np.load('/home/florian/liverSim/dataSource.npy')
     rawRespi, rawQRespi, rawQ3, rawQ4 = toto
-    print('read {}'.format('/home/florian/liverSim/dataSource.npy'))
+    print(('read {}'.format('/home/florian/liverSim/dataSource.npy')))
 except:
     rawRespi = csvreader('/home/florian/liverSim/respiration.csv')
     rawQRespi = csvreader('/home/florian/liverSim/HV_echo_flow-respi.csv')
@@ -103,25 +99,53 @@ q4 = smoothie(rawQ4 * (-1), 1, 'Q 4 phases')
 q3 = smoothie(rawQ3 * (-1), 1, 'Q 3 phases')
 respi = smoothie(rawRespi, 4, 'respiration profile')
 qrespi = smoothie(rawQRespi * (-1), 4, 'Q w/ respiration')
+plt.plot(qmri[:,0],qmri[:,1], '-', label=' Q mri')
 qmri = smoothie(qmri, 1, 'Q vc mri')
+plt.plot(qmri[:,0],qmri[:,1], '-', label=' Q mri')
+plt.show()
 
-plt.legend()
+# normalization w/ respect to q3
+minref = np.min(qmri[:, 1])
+maxref = np.max(qmri[:, 1])
+# qmri[:, 1] = (qmri[:, 1] - minref) / (maxref - minref) * (np.max(q3[:, 1]) - np.min(q3[:, 1])) + np.min(q3[:, 1])
+
+# # shifting qmri to align time with ref Q3
+# AA, BB = shifting(q4, q3)
+# ic(AA, BB)
+
+# plt.legend()
 plt.axhline(y=0, color='k')
 
-plt.show()
-sp = np.fft.fft(q3[:, 1])
-freq = np.fft.fftfreq(q3.shape[0], d=0.04)
-plt.plot(freq, sp.real, '-', label='real')
-plt.plot(freq, sp.imag, '-', label='img')
-
-sp = np.fft.fft(qrespi[:, 1])
-freq = np.fft.fftfreq(qrespi.shape[0], d=0.04)
-plt.plot(freq, sp.real, '-', label='real')
-plt.plot(freq, sp.imag, '-', label='img')
-
-plt.show()
-# plt.plot(q3[:,0],q3[:,1], '-', label=' w/o respi')
+# plt.show()
+# sp = np.fft.fft(q3[:, 1])
+# freq = np.fft.fftfreq(q3.shape[0], d=0.04)
+# plt.plot(freq, sp.real, '-', label='real')
+# plt.plot(freq, sp.imag, '-', label='img')
+#
+# sp = np.fft.fft(qmri[:, 1])
+# freq = np.fft.fftfreq(qmri.shape[0], d=0.04)
+# plt.plot(freq, sp.real, '-', label='real')
+# plt.plot(freq, sp.imag, '-', label='img')
+#
+# plt.show()
+# shifting qmri to align time with ref Q3
+AA, BB = shifting(qmri[:, 1], q3[:, 1])
+ic(AA, BB)
+plt.plot(q3[:, 0, ], q3[:, 1], '-', label=' q3')
 plt.plot(qmri[:, 0], qmri[:, 1], '-', label=' Q mri')
+qmriTemp = qmri
+ic(qmriTemp[:BB, 1].shape)
+ic(qmriTemp[-BB:, 1].shape)
+ic(qmriTemp[BB:, 1].shape)
+ic(qmriTemp[:-BB, 1].shape)
+qmriTemp[:BB, 1] = qmri[-BB:, 1]
+qmriTemp[BB:, 1] = qmri[:-BB, 1]
+# qmri = qmriTemp
+
+# qmri[:, 0] -= BB / 400.
+plt.plot(qmri[:, 0], qmri[:, 1], '-', label=' Q mri  ')
+plt.plot(qmriTemp[:, 0], qmriTemp[:, 1], '-', label=' Q mri temp ')
+
 plt.legend()
 # plt.savefig('qmri.png')
 plt.show()

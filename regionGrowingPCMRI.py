@@ -29,7 +29,7 @@ if extract:
     nda = sitk.GetArrayFromImage(img)
     size = img.GetSize()
     rescaleIntercept, rescaleSlope = img.GetMetaData('0028|1052'), img.GetMetaData('0028|1053')
-    print rescaleIntercept, rescaleSlope
+    print(rescaleIntercept, rescaleSlope)
     '''
     WARING
     a VERSION file is supposed to be present in the folder and thus rejected
@@ -38,7 +38,7 @@ if extract:
     scrollArray = np.empty([size[1], size[0], len(imlist)])
     vesselArray = np.empty([size[1] * r, size[0] * r, len(imlist)])
 
-    print scrollArray.shape
+    print(scrollArray.shape)
     k = 0
     for i in imlist:
         try:
@@ -46,13 +46,13 @@ if extract:
             nda = sitk.GetArrayFromImage(img)
             scrollArray[:, :, k] = nda[0, :, :]
         except RuntimeError:
-            print 'ERROR-ERROR-ERROR-ERROR-ERROR-ERROR'
-            print i
+            print('ERROR-ERROR-ERROR-ERROR-ERROR-ERROR')
+            print(i)
         k += 1
     scrollshow(scrollArray)
 
-    print 'SHOW ME YOUR BEST ANGLE: '
-    slice = input()
+    print('SHOW ME YOUR BEST ANGLE: ')
+    slice = eval(input())
     try:
         val = int(slice)
     except ValueError:
@@ -76,7 +76,7 @@ if extract:
             uavg = np.append(uavg, (np.mean(vesselArray[:, :, k])))
 
         except RuntimeError:
-            print i
+            print(i)
         k += 1
 
     scrollshow(vesselArray)
@@ -110,6 +110,6 @@ def smooth(Y):
 
 vsmooth = smooth(uavg)
 np.save('/home/florian/liverSim/q_vc_MRI', uavg)
-print vsmooth
+print(vsmooth)
 
 plt.show()

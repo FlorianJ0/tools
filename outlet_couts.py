@@ -33,7 +33,7 @@ cellData = polyDataOutput.GetCellData()
 cellNumber = polyDataOutput.GetNumberOfCells()
 points = polyDataOutput.GetPoints()
 
-print 'total cell number in network tree: ', cellNumber
+print('total cell number in network tree: ', cellNumber)
 
 # extraction of topology field
 arrTopo = numpy_support.vtk_to_numpy(cellData.GetArray(0))
@@ -47,7 +47,7 @@ for i in range(len(outletsCells)):
     if outletsCells[i] < 1:
         BCids.append(i)
 
-print 'nb cells in domain: ', len(arrTopo), '; nb of BC cells: ', len(BCids)
+print('nb cells in domain: ', len(arrTopo), '; nb of BC cells: ', len(BCids))
 
 pointData = polyDataOutput.GetPointData()
 arrRadius = numpy_support.vtk_to_numpy(pointData.GetArray(0))
@@ -60,7 +60,7 @@ for i, j in enumerate(arrRadius):
 
 # getting list of first and last point in BC cells
 ptListTotal = []
-for i in xrange(cellNumber):
+for i in range(cellNumber):
     cell = polyDataOutput.GetCell(i)
     nIds = cell.GetPointIds().GetNumberOfIds()
     ids = [cell.GetPointIds().GetId(0), cell.GetPointIds().GetId(nIds - 1)]
@@ -71,7 +71,7 @@ for i in xrange(cellNumber):
 ptList = []
 # addition of the VC inlet
 ptList.append(VC[-1])
-print ptList
+print(ptList)
 points = polyDataOutput.GetPoints()
 for i in range(len(BCids)):
     cell = polyDataOutput.GetCell(BCids[i])
@@ -90,9 +90,9 @@ ptList = flatten(ptList)
 if test:
     ptList = ptList[:60]
 
-print 'Endpoints extracted, computing centerlines with {:f}\
- outlets'.format(len(ptList) / 3.)
-print("--- %s seconds ---" % (time.time() - start_time))
+print('Endpoints extracted, computing centerlines with {:f}\
+ outlets'.format(len(ptList) / 3.))
+print(("--- %s seconds ---" % (time.time() - start_time)))
 
 start_time = time.time()
 
@@ -103,8 +103,8 @@ ctrLines.SourcePoints = VC[0]
 ctrLines.TargetPoints = ptList
 ctrLines.RadiusArrayName = "radius"
 ctrLines.Execute()
-print 'Centerlines computed'
-print("--- %s seconds ---" % (time.time() - start_time))
+print('Centerlines computed')
+print(("--- %s seconds ---" % (time.time() - start_time)))
 start_time = time.time()
 
 view = vmtkscripts.vmtkCenterlineViewer()
@@ -127,8 +127,8 @@ ext.BlankingArrayName = "BlankIds"
 ext.NumberOfEndpointSpheres = 1
 ext.NumberOfGapSpheres = 1
 ext.Execute()
-print 'Endpoints extracted for BC clipping'
-print("--- %s seconds ---" % (time.time() - start_time))
+print('Endpoints extracted for BC clipping')
+print(("--- %s seconds ---" % (time.time() - start_time)))
 start_time = time.time()
 
 clip = vmtkscripts.vmtkBranchClipper()
@@ -139,8 +139,8 @@ clip.BlankingArrayName = "BlankIds"
 clip.GroupIdsArrayName = "GroupIds"
 clip.RadiusArrayName = "radius"
 clip.Progress = 1
-print 'Branches clipped'
-print("--- %s seconds ---" % (time.time() - start_time))
+print('Branches clipped')
+print(("--- %s seconds ---" % (time.time() - start_time)))
 start_time = time.time()
 
 clip.Execute()
@@ -154,8 +154,8 @@ con = vmtkscripts.vmtkSurfaceConnectivity()
 con.Surface = clip.Surface
 con.CleanOutput = 1
 con.Execute()
-print 'Connectivity executed'
-print("--- %s seconds ---" % (time.time() - start_time))
+print('Connectivity executed')
+print(("--- %s seconds ---" % (time.time() - start_time)))
 
 view = vmtkscripts.vmtkSurfaceViewer()
 view.Surface = con.Surface
@@ -168,7 +168,7 @@ myWriter.Surface = con.Surface
 myWriter.OutputFileName = loc + fname + "_endTubesCut.stl"
 myWriter.Execute()
 
-print 'Surfaces written to disk'
-print("--- %s seconds ---" % (time.time() - start_time))
+print('Surfaces written to disk')
+print(("--- %s seconds ---" % (time.time() - start_time)))
 
-print '\n\nBye babe'
+print('\n\nBye babe')

@@ -7,10 +7,16 @@ from vmtk import vmtkscripts
 import time
 
 start_time = time.time()
-
-loc = '/home/florian/liverSim/test_convert/'
+#
+# loc = '/home/florian/liverSim/test_convert/'
 # surf with VC open at both NumberOfEndpointSpheres
-surfFile = loc + "test.vtp"
+# surfFile = loc + "test.vtp"
+surfFile = sys.argv[1]
+if not os.path.isfile(surfFile):
+    print('FILE DOES NOT EXIST')
+    quit()
+    
+loc = os.path.split(surfFile)[0]
 fname = os.path.splitext(os.path.split(surfFile)[1])[0]
 
 args = "vmtksurfacereader -ifile " + surfFile

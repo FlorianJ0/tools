@@ -16,8 +16,10 @@ multi = 7.5  # multiplicator for region growing
 extract = 1  # do not extract data from image but load npy array
 
 if extract:
-    # im = "/home/florian/liverSim/images/PCMRI/De lima Mendes/irm flux preop/QRURUMC4/KPBA3L5B/I2000001"
-    imfolder = '/home/florian/liverSim/images/PCMRI/De lima Mendes/irm flux preop/QRURUMC4/SCZ2RGG5/'
+    #IVC
+    imfolder = '/home/florian/liverSim/images/PCMRI/Faivre/irmflux/YAUSEQ0O/XJBRT0ET/'
+    #SVC
+    # imfolder = '/home/florian/liverSim/images/PCMRI/Faivre/irmflux/YAUSEQ0O/PVSVWPHN/'
     imlist = glob.glob(imfolder + '*')
     imlist.sort()
     for i in imlist:
@@ -52,7 +54,8 @@ if extract:
     scrollshow(scrollArray)
 
     print('SHOW ME YOUR BEST ANGLE: ')
-    slice = eval(input())
+    slice = input()
+    slice = int(slice)
     try:
         val = int(slice)
     except ValueError:
@@ -60,6 +63,7 @@ if extract:
 
     # slice = 14
     segArray = getQ(imlist[slice], r, multi)
+    print('getQ ok')
 
     k = 0
     q = np.empty([0])  # flow rate array
@@ -109,7 +113,7 @@ def smooth(Y):
 
 
 vsmooth = smooth(uavg)
-np.save('/home/florian/liverSim/q_vc_MRI', uavg)
+np.save('/home/florian/liverSim/q_ivc_MRI', uavg)
 print(vsmooth)
 
 plt.show()

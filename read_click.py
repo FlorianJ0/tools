@@ -55,8 +55,10 @@ def getQ(imageFile, r = 2, multi = 7.5):
     ##############################################################################
     # Seed selection
     # --------------
+    print('getpos po ok')
 
     x, y, val = getPos(imArray255)
+    print('getpos ok')
     seed = (x, y, 0)
     print('seed: ', seed)
     seg = sitk.Image(img_T1.GetSize(), sitk.sitkUInt8)

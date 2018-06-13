@@ -15,7 +15,7 @@ Spectral Doppler of the Hepatic Veins in Noncardiac Diseases:
 What the Echocardiographer Should Know
 '''
 
-plt.xkcd()
+# plt.xkcd()
 
 
 def shifting(a, b):
@@ -68,7 +68,11 @@ def smoothie(Y, l=1, curveName="toto"):
     if l == 4:
         yhat = yhat[:100, :]
         yhat[:, 0] *= l
-    # plt.plot(yhat[:, 0], yhat[:, 1], '-', label=curveName)
+    if curveName == 'respiration profile':
+        plt.plot(yhat[:, 0], yhat[:, 1], '.', label=curveName)
+    else:
+        plt.plot(yhat[:, 0], yhat[:, 1], '-', label=curveName)
+
     return yhat
 
 
@@ -89,20 +93,28 @@ except:
     np.save('/home/florian/liverSim/dataSource.npy', allArr)
 
 qmri = np.load('/home/florian/liverSim/q_vc_MRI.npy')
-xmri = np.linspace(0, 1, 25, endpoint=True)
+xmri = np.linspace(0, 1, 40, endpoint=True)
 qmri = np.array([xmri, qmri]).T
+print(qmri[0], type(qmri))
+print('totototo')
 sns.set()
 sns.set_style('white')
 sns.set_context('paper')
 vapeplot.set_palette('vaporwave')
-q4 = smoothie(rawQ4 * (-1), 1, 'Q 4 phases')
-q3 = smoothie(rawQ3 * (-1), 1, 'Q 3 phases')
+q4 = smoothie(rawQ4 * (-1), 1, 'U 4 phases')
+q3 = smoothie(rawQ3 * (-1), 1, 'U 3 phases')
+qrespi = smoothie(rawQRespi * (-1), 4, 'U w/ respiration')
 respi = smoothie(rawRespi, 4, 'respiration profile')
-qrespi = smoothie(rawQRespi * (-1), 4, 'Q w/ respiration')
-plt.plot(qmri[:,0],qmri[:,1], '-', label=' Q mri')
-qmri = smoothie(qmri, 1, 'Q vc mri')
-plt.plot(qmri[:,0],qmri[:,1], '-', label=' Q mri')
-plt.show()
+
+plt.ylabel('Velocity (m/s)')
+plt.xlabel('Time (s)')
+# print(qmri, qmri.shape)
+# plt.plot(qmri[:,0],qmri[:,1], '-', label=' Q mri')
+
+# qmri = smoothie(qmri, 1, 'Q vc mri')
+
+# plt.plot(qmri[:,0],qmri[:,1], '-', label=' Q mri')
+# plt.show()
 
 # normalization w/ respect to q3
 minref = np.min(qmri[:, 1])
@@ -129,23 +141,26 @@ plt.axhline(y=0, color='k')
 #
 # plt.show()
 # shifting qmri to align time with ref Q3
-AA, BB = shifting(qmri[:, 1], q3[:, 1])
-ic(AA, BB)
-plt.plot(q3[:, 0, ], q3[:, 1], '-', label=' q3')
-plt.plot(qmri[:, 0], qmri[:, 1], '-', label=' Q mri')
-qmriTemp = qmri
-ic(qmriTemp[:BB, 1].shape)
-ic(qmriTemp[-BB:, 1].shape)
-ic(qmriTemp[BB:, 1].shape)
-ic(qmriTemp[:-BB, 1].shape)
-qmriTemp[:BB, 1] = qmri[-BB:, 1]
-qmriTemp[BB:, 1] = qmri[:-BB, 1]
+# AA, BB = shifting(qmri[:, 1], q3[:, 1])
+# ic(AA, BB)
+# plt.plot(q3[:, 0, ], q3[:, 1], '-', label=' q3')
+# plt.plot(q4[:, 0, ], q4[:, 1], '-', label=' q4')
+# plt.plot(qrespi[:, 0, ], qrespi[:, 1], '-', label=' q_respi')
+# plt.plot(respi[:, 0, ], respi[:, 1], '-', label=' respi profile')
+# plt.plot(qmri[:, 0], qmri[:, 1], '-', label=' Q mri')
+# qmriTemp = qmri
+# ic(qmriTemp[:BB, 1].shape)
+# ic(qmriTemp[-BB:, 1].shape)
+# ic(qmriTemp[BB:, 1].shape)
+# ic(qmriTemp[:-BB, 1].shape)
+# qmriTemp[:BB, 1] = qmri[-BB:, 1]
+# qmriTemp[BB:, 1] = qmri[:-BB, 1]
 # qmri = qmriTemp
 
 # qmri[:, 0] -= BB / 400.
-plt.plot(qmri[:, 0], qmri[:, 1], '-', label=' Q mri  ')
-plt.plot(qmriTemp[:, 0], qmriTemp[:, 1], '-', label=' Q mri temp ')
+# plt.plot(qmri[:, 0], qmri[:, 1], '-', label=' Q mri  ')
+# plt.plot(qmriTemp[:, 0], qmriTemp[:, 1], '-', label=' Q mri temp ')
 
 plt.legend()
-# plt.savefig('qmri.png')
+plt.savefig('veloc_HV_Fadeletal.png')
 plt.show()

@@ -32,8 +32,8 @@ def getQ(imageFile, r = 2, multi = 7.5):
     # Load Images
     # -----------
     # r = 2 # resampling factor
-    resSlope = 2 #from dcm file
-    reIntercep = -4096 #from dcm file
+    resSlope = 1 #from dcm file
+    reIntercep = 0 #from dcm file
     # u = slope * signal + intercept
     img_T1 = sitk.ReadImage(imageFile)
     img_T1 = sitk.Expand(img_T1, [r,r,1] * 3, sitk.sitkLinear)
@@ -129,18 +129,18 @@ def getQ(imageFile, r = 2, multi = 7.5):
 
     # print seg_clean[234, 256,1]
     segArray = sitk.GetArrayFromImage(seg_clean)
-    print(segArray.shape)
+    # print(segArray.shape)
     segArray = segArray[0,:,:]
     segImArray = imArray[segArray>0]
-    print(segImArray.shape, len(segImArray))
+    # print(segImArray.shape, len(segImArray))
     # u = slope * signal + intercept
     sumPix = np.sum(segImArray)
     vag = np.mean(segImArray)
-    print('Q =', sumPix, 'Vavg = ', vag)
-    segImArrayPhysical = segImArray * resSlope + reIntercep #in physical units
-    sumPix = np.sum(segImArrayPhysical)
-    vag = np.mean(segImArrayPhysical)
-    print('Q =', sumPix, 'Vavg = ', vag)
+    # print('Q =', sumPix, 'Vavg = ', vag)
+    # segImArrayPhysical = segImArray * resSlope + reIntercep #in physical units
+    # sumPix = np.sum(segImArrayPhysical)
+    # vag = np.mean(segImArrayPhysical)
+    # print('Q =', sumPix, 'Vavg = ', vag)
 
     return  segArray
 

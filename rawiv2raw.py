@@ -3,55 +3,55 @@ import vtk
 import sys
 from vmtk import pypes
 import numpy as np
-from tkinter import *
-from tkinter import Frame, Tk, BOTH, Text, Menu, END
-import tkinter.filedialog
+#from tkinter import *
+#from tkinter import Frame, Tk, BOTH, Text, Menu, END
+#import tkinter.filedialog
 
-class guigui(Frame):
-
-    def __init__(self, parent):
-        Frame.__init__(self, parent)
-
-        self.parent = parent
-        self.initUI()
-
-    def initUI(self):
-
-        self.parent.title("File dialog")
-        self.pack(fill=BOTH, expand=1)
-
-        menubar = Menu(self.parent)
-        self.parent.config(menu=menubar)
-
-        fileMenu = Menu(menubar)
-        fileMenu.add_command(label="Open", command=self.onOpen)
-        menubar.add_cascade(label="File", menu=fileMenu)
-
-        self.txt = Text(self)
-        self.txt.pack(fill=BOTH, expand=1)
-
-
-    def onOpen(self):
-
-        ftypes = [('Python files', '*.py'), ('All files', '*')]
-        dlg = tkinter.filedialog.Open(self, filetypes = ftypes)
-        fl = dlg.show()
-
-        if fl != '':
-            text = self.readFile(fl)
-            self.txt.insert(END, text)
+#class guigui(Frame):
+#
+#    def __init__(self, parent):
+#        Frame.__init__(self, parent)
+#
+#        self.parent = parent
+#        self.initUI()
+#
+#    def initUI(self):
+#
+#        self.parent.title("File dialog")
+#        self.pack(fill=BOTH, expand=1)
+#
+#        menubar = Menu(self.parent)
+#        self.parent.config(menu=menubar)
+#
+#        fileMenu = Menu(menubar)
+#        fileMenu.add_command(label="Open", command=self.onOpen)
+#        menubar.add_cascade(label="File", menu=fileMenu)
+#
+#        self.txt = Text(self)
+#        self.txt.pack(fill=BOTH, expand=1)
+#
+#
+#    def onOpen(self):
+#
+#        ftypes = [('Python files', '*.py'), ('All files', '*')]
+#        dlg = tkinter.filedialog.Open(self, filetypes = ftypes)
+#        fl = dlg.show()
+#
+#        if fl != '':
+#            text = self.readFile(fl)
+#            self.txt.insert(END, text)
 
 
 # fname = sys.argv[1]
 # outfname = sys.argv[2]
-fname = "/home/florian/liverSim/test_convert/CHARBONNIER^ERIC^GILBERT-1.2.840.113704.7.32.1.2.840.113704.1.111.11064.1445517251.25-REC-477.rawiv"
-outfname = "/home/florian/liverSim/test_convert/toto.vti"
+fname = "/home/florian/Downloads/CHEURFA^TASSADIT^^MRS-1.2.840.113704.7.32.0.340.3.2869567146.339.1493708775.43.3153920-REC-329.rawiv"
+outfname = "/home/florian/Downloads/CHEUM.vti"
 outSurfName = outfname[:-4] + '_surf.vtp'
 
-root = Tk()
-ex = guigui()
-root.geometry("300x250+300+300")
-root.mainloop()
+#root = Tk()
+#ex = guigui()
+#root.geometry("300x250+300+300")
+#root.mainloop()
 
 print('\n reading ', fname)
 with open(fname, 'rb') as f:

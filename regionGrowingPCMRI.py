@@ -1,4 +1,4 @@
-import os
+import os, sys
 from read_click import getQ
 import numpy as np
 import glob
@@ -14,44 +14,56 @@ import seaborn as sns
 r = 3  # scaling factor
 multi = 7.5  # multiplicator for region growing
 
-extract = 1  # do not extract data from image but load npy array
-plot = 0
-fname = 'lariou_A-ASC'
-print(fname)
-imagesSourcesFaivre = {"faivre_PV": '/home/florian/liverSim/images/PCMRI/Faivre/irmflux/YAUSEQ0O/GCNUDSJY/',
-                       "faivre_VCI": '/home/florian/liverSim/images/PCMRI/Faivre/irmflux/YAUSEQ0O/4RCRHXM0/',
-                       "faivre_VCI30": '/home/florian/liverSim/images/PCMRI/Faivre/irmflux/YAUSEQ0O/OKTTPH2Q/',
-                       "faivre_VCS": '/home/florian/liverSim/images/PCMRI/Faivre/irmflux/YAUSEQ0O/4RVFT1PH/',
-                       'faivre_A-ASC': '/home/florian/liverSim/images/PCMRI/Faivre/irmflux/YAUSEQ0O/TS3F12CD/',
-                       'faivre_A-DES': '/home/florian/liverSim/images/PCMRI/Faivre/irmflux/YAUSEQ0O/TS3F12CD/'
+extract = 0  # do not extract data from image but load npy array
+plot = 1
+imagesSourcesFaivre = {"faivre_PV": '/home/florian/codes/liverSim/images/PCMRI/Faivre/irmflux/YAUSEQ0O/GCNUDSJY/',
+                       "faivre_VCI": '/home/florian/codes/liverSim/images/PCMRI/Faivre/irmflux/YAUSEQ0O/4RCRHXM0/',
+                       "faivre_VCI30": '/home/florian/codes/liverSim/images/PCMRI/Faivre/irmflux/YAUSEQ0O/OKTTPH2Q/',
+                       "faivre_VCS": '/home/florian/codes/liverSim/images/PCMRI/Faivre/irmflux/YAUSEQ0O/4RVFT1PH/',
+                       'faivre_A-ASC': '/home/florian/codes/liverSim/images/PCMRI/Faivre/irmflux/YAUSEQ0O/TS3F12CD/',
+                       'faivre_A-DES': '/home/florian/codes/liverSim/images/PCMRI/Faivre/irmflux/YAUSEQ0O/TS3F12CD/'
                        }
 imagesSourcesAGeorges = {
-    'ageorges_PV': "/home/florian/liverSim/images/PCMRI/ageorgesirmflux/0CU03R5Y/FXVBGII4/"
+    'ageorges_PV': "/home/florian/codes/liverSim/images/PCMRI/ageorgesirmflux/0CU03R5Y/FXVBGII4/"
 }
 
 imagesSourcesDeLima = {
-    'delima_A-DES': '/home/florian/liverSim/images/PCMRI/De lima Mendes/irm flux preop/QRURUMC4/K1PPKOWE/',
-    'delima_PV': '/home/florian/liverSim/images/PCMRI/De lima Mendes/irm flux preop/QRURUMC4/GAMAJK0P/',
-    'delima_VCI': '/home/florian/liverSim/images/PCMRI/De lima Mendes/irm flux preop/QRURUMC4/S11ASJ0I/'
+    'delima_A-DES': '/home/florian/codes/liverSim/images/PCMRI/De lima Mendes/irm flux preop/QRURUMC4/K1PPKOWE/',
+    'delima_PV': '/home/florian/codes/liverSim/images/PCMRI/De lima Mendes/irm flux preop/QRURUMC4/GAMAJK0P/',
+    'delima_VCI': '/home/florian/codes/liverSim/images/PCMRI/De lima Mendes/irm flux preop/QRURUMC4/S11ASJ0I/'
 }
 
 imagesSourcesLariou = {
-    'lariou_PV': '/home/florian/liverSim/images/PCMRI/Lariou/irmflux/ZZ4NH0B5/CP3YH44M/',
-    'lariou_HA': '/home/florian/liverSim/images/PCMRI/Lariou/irmflux/ZZ4NH0B5/JHEDZLGV/',
-    'lariou_A-DES': '/home/florian/liverSim/images/PCMRI/Lariou/irmflux/ZZ4NH0B5/5033WNWX/',
-    'lariou_A-ASC': '/home/florian/liverSim/images/PCMRI/Lariou/irmflux/ZZ4NH0B5/5033WNWX/',
-    'lariou_VCI': '/home/florian/liverSim/images/PCMRI/Lariou/irmflux/ZZ4NH0B5/FNVTGXHC/'
+    'lariou_PV': '/home/florian/codes/liverSim/images/PCMRI/Lariou/irmflux/ZZ4NH0B5/CP3YH44M/',
+    'lariou_HA': '/home/florian/codes/liverSim/images/PCMRI/Lariou/irmflux/ZZ4NH0B5/JHEDZLGV/',
+    'lariou_A-DES': '/home/florian/codes/liverSim/images/PCMRI/Lariou/irmflux/ZZ4NH0B5/5033WNWX/',
+    'lariou_A-ASC': '/home/florian/codes/liverSim/images/PCMRI/Lariou/irmflux/ZZ4NH0B5/5033WNWX/',
+    'lariou_VCI': '/home/florian/codes/liverSim/images/PCMRI/Lariou/irmflux/ZZ4NH0B5/FNVTGXHC/'
 }
 
 imagesSourcesBelmejdoub = {
-    'Belmejdoub_PV': '/home/florian/liverSim/images/PCMRI/Belmejdoub/IRMFLUX/SREUF1TI/1MO2CISA/',
-    'Belmejdoub_A-ASC': '/home/florian/liverSim/images/PCMRI/Belmejdoub/IRMFLUX/SREUF1TI/JQBQCBTL/',
-    # 'Belmejdoub_A-DES60': '/home/florian/liverSim/images/PCMRI/Belmejdoub/IRMFLUX/SREUF1TI/1ID4DCYF/',
-    'Belmejdoub_VCI': '/home/florian/liverSim/images/PCMRI/Belmejdoub/IRMFLUX/SREUF1TI/DTOHGWWT/',
-    'Belmejdoub_VCI2': '/home/florian/liverSim/images/PCMRI/Belmejdoub/IRMFLUX/SREUF1TI/SMRHXGRB/'
+    'Belmejdoub_PV': '/home/florian/codes/liverSim/images/PCMRI/Belmejdoub/IRMFLUX/SREUF1TI/1MO2CISA/',
+    'Belmejdoub_A-ASC': '/home/florian/codes/liverSim/images/PCMRI/Belmejdoub/IRMFLUX/SREUF1TI/JQBQCBTL/',
+    # 'Belmejdoub_A-DES60': '/home/florian/codes/liverSim/images/PCMRI/Belmejdoub/IRMFLUX/SREUF1TI/1ID4DCYF/',
+    'Belmejdoub_VCI': '/home/florian/codes/liverSim/images/PCMRI/Belmejdoub/IRMFLUX/SREUF1TI/DTOHGWWT/',
+    'Belmejdoub_VCI2': '/home/florian/codes/liverSim/images/PCMRI/Belmejdoub/IRMFLUX/SREUF1TI/SMRHXGRB/'
 }
 
-imfolder = imagesSourcesBelmejdoub[fname]
+imagesSourcesSEBG = {
+        'SEBG_PV':'',
+        'SEBG_VCI':'/home/florian/codes/liverSim/images/PCMRI/Bauman/EAEWITP1/PEE3WTJX/', #vci amont
+        'SEBG_VCII':' /home/florian/codes/liverSim/images/PCMRI/Bauman/EAEWITP1/ONGDXIJW/', #vci amont 2
+        'SEBG_VCI2':'/home/florian/codes/liverSim/images/PCMRI/Bauman/EAEWITP1/ZGERO2IS/',#vci aval sushep
+        'SEBG_HV':'/home/florian/codes/liverSim/images/PCMRI/Bauman/EAEWITP1/OAWHOEGY/',
+        'SEBG_A-DES':'/home/florian/codes/liverSim/images/PCMRI/Bauman/EAEWITP1/FRR15TAX/'
+        }
+
+fname = 'SEBG_VCI'
+imfolder = imagesSourcesSEBG[fname]
+
+print('Current evaluation is {}'.format(fname))
+
+
 col = {'PV': 'burnt sienna', 'VCS': 'pea green', 'A-DES': 'dark teal', 'A-DES60': 'dark teal', 'A-ASC': 'cerulean',
        'VCI': 'goldenrod',
        'VCI30': 'bluish purple', 'VCI2': 'bluish purple', 'HV': 'charcoal', 'HA': 'coral'}
@@ -69,9 +81,10 @@ def BSA(W, H, S):
     return bsa
 
 
-def smooth(Y, color, leg, CP):
+def smooth(Y, color, leg, CP=1):
     plotvar = np.append(np.append(Y, Y), Y)
     x = np.linspace(0, 3 * CP, num=plotvar.shape[0], endpoint=True)
+    print('heart period: ', CP)
     y3 = savgol_filter(plotvar, 5, 3)
     f3 = interp1d(x, y3, kind='cubic')
     xnew = np.linspace(0, 3 * CP, num=149, endpoint=True)
@@ -124,10 +137,12 @@ def computeFlowRate(veins, HR, ptName):
         qmean.append(np.abs(np.mean(Qdict['HV'])))
         print('QPV = {} L/min'.format(np.mean(np.abs(qmean * 60000))))
         print('QPV = {} L/min'.format(np.mean(Qdict['HV'])))
-    if ptName == 'faivre':
+    if ptName == 'lariou':
         print(Qdict['VCI'])
+        print(Qdict['HV'])
+
     plt.title(ptName)
-    plt.savefig(ptName + '_Qprofiles.png')
+    # plt.savefig(ptName + '_Qprofiles.png')
     plt.show()
     return umean, umax, qmean
 
@@ -258,9 +273,9 @@ if extract:
 
     smooth(uavg, 'teal', 'Umean')
     smooth(umax, 'brick red', 'Umax')
-    # np.save('/home/florian/liverSim/q_ivc_MRI', uavg)
+    # np.save('/home/florian/codes/liverSim/q_ivc_MRI', uavg)
     # print(vsmooth)
-    plt.savefig("lariouavci.png")
+    # plt.savefig("lariouavci.png")
     plt.show()
 
 if plot:
@@ -297,6 +312,27 @@ if plot:
     veins = ['PV', 'HA', 'A-DES', 'A-ASC', 'VCI']
     umean, umax, qmean = computeFlowRate(veins, 60 / HR[pt], pt)
     results[pt] = [veins, umean, umax, qmean]
+
+
+
+
+    pt = "SEBG"
+    weight['SEBG'] = 73
+    height['SEBG'] = 1.75
+    HR['SEBG'] = 77.16
+    dx = 1.0625
+    sex['SEBG'] = 0
+    bsa = BSA(weight['SEBG'], height['SEBG'], sex['SEBG'])
+    BSAdict['SEBG'] = bsa
+
+    print("BSA = {0:0.4f} m²".format(bsa))
+    veins = ['VCI', 'VCI2','A-DES', 'HV']
+    umean, umax, qmean = computeFlowRate(veins, 60 / HR[pt], pt)
+    results[pt] = [veins, umean, umax, qmean]
+
+
+
+
 
     pt = "ageorges"
     weight['ageorges'] = 73
@@ -341,7 +377,7 @@ if plot:
     plt.xticks(x, ('faivre', 'lariou', 'ageorges', 'delima'))
     plt.ylabel('Mean volumetric flow rate (L/min/m2)')
     plt.title("Portal vein")
-    plt.savefig("PV_all_BSA.png")
+    # plt.savefig("PV_all_BSA.png")
     plt.show()
 
     # nb of A-ASC data
@@ -357,23 +393,25 @@ if plot:
     plt.xticks(x, ('faivre', 'lariou'))
     plt.ylabel('Mean volumetric flow rate (L/min/m2)')
     plt.title("Ascending aorta")
-    plt.savefig("A-ASC_all_BSA.png")
+    # plt.savefig("A-ASC_all_BSA.png")
     plt.show()
 
     # nb of A-DES data
-    x = np.arange(3)
+    x = np.arange(4)
     fig, ax = plt.subplots()
     r = [
         results['faivre'][-1][2],
         results['lariou'][-1][2],
         # results['ageorges'][-1][0],
-        results['delima'][-1][1]
+        results['delima'][-1][1],
+        results['SEBG'][-1][-2]
+
     ]
     plt.bar(x, r, color='xkcd:' + col['A-DES'])
     plt.xticks(x, ('faivre', 'lariou', 'delima'))
     plt.ylabel('Mean volumetric flow rate (L/min/m2)')
     plt.title("Descending aorta")
-    plt.savefig("A-DES_all_BSA.png")
+    # plt.savefig("A-DES_all_BSA.png")
     plt.show()
 
     # nb of VCS data
@@ -389,39 +427,44 @@ if plot:
     plt.xticks(x, ('faivre'))
     plt.ylabel('Mean volumetric flow rate (L/min/m2)')
     plt.title("Superior vena cava")
-    plt.savefig("VCS_all_BSA.png")
+    # plt.savefig("VCS_all_BSA.png")
     plt.show()
 
     # nb of VCI data
-    x = np.arange(3)
+    x = np.arange(5)
     fig, ax = plt.subplots()
     r = [
         results['faivre'][-1][4],
         results['lariou'][-1][4],
         # results['ageorges'][-1][0],
-        results['delima'][-1][2]
+        results['delima'][-1][2],
+        results['SEBG'][-1][0],
+        results['SEBG'][-1][1]
+
     ]
     plt.bar(x, r, color='xkcd:' + col['VCI'])
     plt.xticks(x, ('faivre', 'lariou', 'delima'))
     plt.ylabel('Mean volumetric flow rate (L/min/m2)')
     plt.title("Inferior vena cava")
-    plt.savefig("VCI_all_BSA.png")
+    # plt.savefig("VCI_all_BSA.png")
     plt.show()
 
     # nb of HV data
-    x = np.arange(3)
+    x = np.arange(4)
     fig, ax = plt.subplots()
     r = [
         results['faivre'][-1][-1],
         results['lariou'][-1][-1],
         # results['ageorges'][-1][0],
-        results['delima'][-1][-1]
+        results['delima'][-1][-1],
+        results['SEBG'][-1][-1]
+
     ]
     plt.bar(x, r, color='xkcd:' + col['HV'])
     plt.xticks(x, ('faivre', 'lariou', 'delima'))
     plt.ylabel('Mean volumetric flow rate (L/min/m2)')
     plt.title("Hepatic veins (sum of)")
-    plt.savefig("HV_all_BSA.png")
+    # plt.savefig("HV_all_BSA.png")
     plt.show()
 
     # HV = HA+PV = 1.2 PV
@@ -449,7 +492,7 @@ if plot:
     plt.ylabel('Mean volumetric flow rate (L/min/m2)')
     plt.title('HV = HA+PV = 1.2 PV (expected by construction)')
     plt.tight_layout()
-    plt.savefig("HVvsPV.png")
+    # plt.savefig("HVvsPV.png")
     plt.show()
 
     # VCI+HV = A-DES
@@ -477,7 +520,7 @@ if plot:
     plt.ylabel('Mean volumetric flow rate (L/min/m2)')
     plt.title('VCI+HV VS A-DES')
     plt.tight_layout()
-    plt.savefig("VCIHVvsADES.png")
+    # plt.savefig("VCIHVvsADES.png")
     plt.show()
 
     # VCS = A-ASC - A-DES
@@ -496,5 +539,5 @@ if plot:
     plt.ylabel('Mean volumetric flow rate (L/min/m2)')
     plt.title('VCS VS A-ASC - A-DES')
     plt.tight_layout()
-    plt.savefig("VCSvsAASCADES.png")
+    # plt.savefig("VCSvsAASCADES.png")
     plt.show()

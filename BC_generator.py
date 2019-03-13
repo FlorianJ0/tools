@@ -5,7 +5,10 @@ from scipy.interpolate import interp1d
 from scipy import fftpack, signal
 from scipy.interpolate import UnivariateSpline
 import seaborn as sns
-import vapeplot
+import pandas as pd
+#import vapeplot
+#from vapeplot import *
+
 # from icecream import ic
 from sklearn import preprocessing
 
@@ -16,8 +19,8 @@ What the Echocardiographer Should Know
 '''
 
 # plt.xkcd()
-
-
+qvc_article=np.array([-0.547945205479451,3.83561643835617,9.31506849315069,14.7945205479452,21.3698630136986,26.3013698630137,31.2328767123288,35.0684931506849,31.7808219178082,28.4931506849315,23.013698630137,18.6301369863014,15.3424657534247,12.6027397260274,12.0547945205479,13.6986301369863,17.5342465753425,20.2739726027397,21.3698630136986,19.1780821917808,16.986301369863,15.3424657534247,13.6986301369863,10.958904109589,9.31506849315069,6.02739726027397,1.0958904109589,-1.0958904109589,-4.38356164383562,-7.67123287671232,-4.93150684931507,-2.73972602739725,0])
+qvc_article_pd = pd.DataFrame(qvc_article)
 def shifting(a, b):
     A = fftpack.fft(a)
     B = fftpack.fft(b)
@@ -35,7 +38,7 @@ def shifting(a, b):
 
 def csvreader(infile):
     toto = []
-    with open(infile, 'rb') as csvfile:
+    with open(infile, 'r') as csvfile:
         reader = csv.reader(csvfile, delimiter=';', quotechar='|')
         for row in reader:
             toto.append(row)
@@ -65,6 +68,7 @@ def smoothie(Y, l=1, curveName="toto"):
     yhat = yhat.T
     yhat = np.tile(yhat, (4, 1))
     yhat[:, 0] = np.linspace(0, 4 * k * CP, num=4 * k * 100, endpoint=True)
+    print('RI = ', (np.max(yhat[:,1])-np.min(yhat[:,1]))/np.max(yhat[:,1]))
     if l == 4:
         yhat = yhat[:100, :]
         yhat[:, 0] *= l
@@ -81,18 +85,19 @@ k = 4
 RP = k * CP  # respiratory period 8s
 
 try:
-    toto = np.load('/home/florian/liverSim/dataSource.npy')
-    rawRespi, rawQRespi, rawQ3, rawQ4 = toto
-    print(('read {}'.format('/home/florian/liverSim/dataSource.npy')))
+    toto = np.load('/home/florian/codes/liverSim/dataSource.npy')
+    rawRespi, rawQRespi, rawQ3, rawQ4,rawQarticle = toto
+    print(('read {}'.format('/home/florian/codes/liverSim/dataSource.npy')))
 except:
-    rawRespi = csvreader('/home/florian/liverSim/respiration.csv')
-    rawQRespi = csvreader('/home/florian/liverSim/HV_echo_flow-respi.csv')
-    rawQ3 = csvreader('/home/florian/liverSim/HV_echo_flow3.csv')
-    rawQ4 = csvreader('/home/florian/liverSim/HV_echo_flow4.csv')
+    rawRespi = csvreader('/home/florian/codes/liverSim/respiration.csv')
+    rawQRespi = csvreader('/home/florian/codes/liverSim/HV_echo_flow-respi.csv')
+    rawQ3 = csvreader('/home/florian/codes/liverSim/HV_echo_flow3.csv')
+    rawQ4 = csvreader('/home/florian/codes/liverSim/HV_echo_flow4.csv')
+    rawQarticle = csvreader('/home/florian/codes/liverSim/HV_tri_article.csv')
     allArr = np.array([rawRespi, rawQRespi, rawQ3, rawQ4])
-    np.save('/home/florian/liverSim/dataSource.npy', allArr)
+    np.save('/home/florian/codes/liverSim/dataSource.npy', allArr)
 
-qmri = np.load('/home/florian/liverSim/q_vc_MRI.npy')
+qmri = np.load('/home/florian/codes/liverSim/q_vc_MRI.npy')
 xmri = np.linspace(0, 1, 40, endpoint=True)
 qmri = np.array([xmri, qmri]).T
 print(qmri[0], type(qmri))
@@ -100,11 +105,13 @@ print('totototo')
 sns.set()
 sns.set_style('white')
 sns.set_context('paper')
-vapeplot.set_palette('vaporwave')
-q4 = smoothie(rawQ4 * (-1), 1, 'U 4 phases')
-q3 = smoothie(rawQ3 * (-1), 1, 'U 3 phases')
-qrespi = smoothie(rawQRespi * (-1), 4, 'U w/ respiration')
-respi = smoothie(rawRespi, 4, 'respiration profile')
+#vapeplot.set_palette('vaporwave')
+#q4 = smoothie(rawQ4 * (-1), 1, 'U 4 phases')
+#q3 = smoothie(rawQ3 * (-1), 1, 'U 3 phases')
+#rawQarticle[:,1] *= 0.5
+qarticle = smoothie(rawQarticle,1, 'u article')
+#qrespi = smoothie(rawQRespi * (-1), 4, 'U w/ respiration')
+#respi = smoothie(rawRespi, 4, 'respiration profile')
 
 plt.ylabel('Velocity (m/s)')
 plt.xlabel('Time (s)')
